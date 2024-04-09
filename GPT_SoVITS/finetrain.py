@@ -11,15 +11,12 @@ from config import (
     is_half,
     exp_root,
 )
-from GPT_SoVITS.s1_train import train as s1_train
 
 is_half = False
 
 now_dir = os.getcwd()
 sys.path.insert(0, now_dir)
-SoVITS_weight_root = "SoVITS_weights"
-GPT_weight_root = "GPT_weights"
-os.makedirs(GPT_weight_root, exist_ok=True)
+
 tmp = os.path.join(now_dir, "TEMP")
 os.makedirs(tmp, exist_ok=True)
 os.environ["TEMP"] = tmp
@@ -37,8 +34,6 @@ if os.path.exists(tmp):
 
 
 def load_and_save(model_path, new_model):
-    # checkpoint_dict = torch.load(model_path, map_location="cpu")
-    # print(checkpoint_dict)
     checkpoint_dict = {}
     step = int(model_path.split("=")[-1].split(".")[0])
     epoch = int(model_path.split("=")[-2].split("e")[0])
@@ -47,7 +42,6 @@ def load_and_save(model_path, new_model):
     checkpoint_dict["state_dict"] = torch.load(
         model_path, map_location="cpu"
     ).state_dict()
-    # print(checkpoint_dict)
     torch.save(checkpoint_dict, new_model)
 
 
@@ -74,7 +68,7 @@ def prepare_datasets(inp_text, inp_wav_dir, opt_dir):
 
 
 def train_model(
-    batch_size=4,
+    batch_size=20,
     total_epoch=50,
     exp_name="xxx",
     if_save_latest=True,
@@ -102,8 +96,10 @@ def train_model(
     data["train"]["save_every_epoch"] = save_every_epoch
     data["train"]["gpu_numbers"] = "1"
     data["data"]["exp_dir"] = data["s2_ckpt_dir"] = s2_dir
+    SoVITS_weight_root = os.path.join(exp_name, "SoVITS_weights")
+    os.makedirs(SoVITS_weight_root, exist_ok=True)
     data["save_weight_dir"] = SoVITS_weight_root
-    data["name"] = exp_name
+    data["name"] = exp_name.replace('/', '_')
     tmp_config_path = "%s/tmp_s2.json" % tmp
     with open(tmp_config_path, "w") as f:
         f.write(json.dumps(data))
@@ -114,7 +110,7 @@ def train_model(
 
 def main():
     inp_text, inp_wav_dir, opt_dir = sys.argv[1:]
-    # prepare_datasets(inp_text, inp_wav_dir, opt_dir)
+    prepare_datasets(inp_text, inp_wav_dir, opt_dir)
     train_model(exp_name=opt_dir)
 
 
