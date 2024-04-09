@@ -16,6 +16,9 @@ RUN apt-get update && \
 
 # Copy only requirements.txt initially to leverage Docker cache
 WORKDIR /workspace
+# RUN pip install -U pip
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip config set install.trusted-host https://pypi.tuna.tsinghua.edu.cn 
 COPY requirements.txt /workspace/
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -40,6 +43,6 @@ COPY . /workspace
 # Copy the rest of the application
 COPY . /workspace
 
-EXPOSE 9871 9872 9873 9874 9880
+# EXPOSE 9871 9872 9873 9874 9880
 
-CMD ["python", "webui.py"]
+# CMD ["python", "webui.py"]
